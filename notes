@@ -1,0 +1,15 @@
+        for movie_idx, movie in movies_rated_by_user.iterrows():
+            true_rating = movie['rating']
+            movie_to_rate_genres = movies_rated_by_user.iloc[movie_idx]['genres']
+            movie_to_rate_genres = np.expand_dims(movie_to_rate_genres, axis=0)
+            if movies_rated_by_user.shape[0] > 1:
+                movies_to_use = movies_rated_by_user[movies_rated_by_user['movieId'] != movie['movieId']]
+            else:
+                movies_to_use = movies_rated_by_user
+            movies_to_use = movies_to_use.drop('title', axis = 1)
+            movies_to_use_genres = np.stack(movies_to_use['genres'].values)
+            genre_preference_vector = np.expand_dims(np.mean(movies_to_use_genres, axis = 0), axis=0)
+            estimated_rating = metrics.cosine_similarity(movie_to_rate_genres, genre_preference_vector) * 5
+            estimated_rating = np.squeeze(estimated_rating)
+            squared_error = (estimated_rating - true_rating) ** 2
+            squared_errors.append(squared_error)
